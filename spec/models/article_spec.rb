@@ -44,11 +44,6 @@ RSpec.describe Article, :type => :model do
       it_should_behave_like 'ordered list', 'recent_list'
     end
 
-    describe :search do
-      let(:args) { 'title' }
-      it_should_behave_like 'ordered list', 'search'
-    end
-
     describe :tagged_by do
       let(:args) { 'tag' }
       it_should_behave_like 'ordered list', 'tagged_by'
@@ -68,6 +63,36 @@ RSpec.describe Article, :type => :model do
       let(:args) { user }
       it_should_behave_like 'ordered list', 'feed_list'
     end
+  end
+
+  describe :draft? do
+    context "when new record" do
+      subject { FactoryGirl.build(:article) }
+
+      it { should be_draft }
+    end
+
+    context "when draft record" do
+      subject { FactoryGirl.create(:draft) }
+
+      it { should be_draft }
+    end
+
+    context "when published record" do
+      subject { FactoryGirl.create(:article) }
+
+      it { should_not be_draft }
+    end
+  end
+
+  describe :owned_draft do
+    let(:draft1) { FactoryGirl.create(:draft) }
+    let(:draft2) { FactoryGirl.create(:draft) }
+    before { [draft1, draft2] }
+
+    subject { Article.owned_draft(draft1.user) }
+
+    it { should contain_exactly(draft1) }
   end
 
   describe :save do
