@@ -9,25 +9,25 @@ class ArticlesController < ApplicationController
   # GET /articles
   # GET /articles.json
   def index
-    @articles = Article.recent_list(params[:page])
+    @articles = Article.order("updated_at DESC").recent_list(params[:page])
   end
 
   # GET /articles
   # GET /articles.json
   def feed
-    @articles = Article.feed_list(current_user, params[:page])
+    @articles = Article.order("updated_at DESC").feed_list(current_user, params[:page])
   end
 
   # GET /articles
   # GET /articles.json
   def search
-    @articles = Article.search(params[:query], params[:page])
+    @articles = Article.order("updated_at DESC").search(params[:query], params[:page])
   end
 
   # GET /articles/stocks
   # GET /articles/stocks.json
   def stocked
-    @articles = Article.stocked_by(current_user, params[:page])
+    @articles = Article.order("updated_at DESC").stocked_by(current_user, params[:page])
   end
 
   # GET /articles/tag/1
@@ -77,6 +77,9 @@ class ArticlesController < ApplicationController
       if @article.save
         format.html { redirect_to @article, notice: 'Article was successfully created.' }
         format.json { render :show, status: :created, location: @article }
+        # メール通知
+        @mail = NoticeMailer.sendmail_update(current_user, @article)
+        @mail.deliver
       else
         format.html { render :new }
         format.json { render json: @article.errors, status: :unprocessable_entity }
